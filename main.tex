@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\title{Máquinas de Estado Abstracto}
+\author{Mauricio Collazos \\
+Email: \href{mailto:ma0@contraslash.com}{ma0@contraslash.com}}
+
+\begin{document}
+\maketitle
+
+\section{Introducción}
+Las Máquinas Abstractas de Estado (Abstract State Machines ASM) son un concepto iniciado por Yuri Gurevich en los finales de los 80, y su propósito general era acercar los conceptos teóricos de las matemáticas formales a los modelos empíricos ya existentes. La tesis principal era que aunque los modelos formales eran muy efectivos, considerando la lógica de primer órden o el cálculo lambda, a la fecha los problemas de la vida real eran solucionados con métodos mas informales llamando principalmente la atención los lenguajes de consulta relacional, los cuales no utilizan la lógica de primer órden que no es suficientemente expresiva, ni la de segundo órden que es altamente expresiva pero computacionalmente ineficiente, por el contrario solucionan los problemas de una manera más informal pero con resultados tan altamente pertinentes que son ampliamente utilizados en la inustria \cite{GurevichLogicScience}.
+
+Más adelante, el mismo Gurevich en los principios de los 90, formaliza la ídea con el concepto de Álgebras evolutivas (Evolving Algebras) \cite{GurevichEvolving}, citando un artículo previo que denominó como el tutorial \cite{Gurevich1991EVOLVINGSEMANTICS}, donde a manera de conversación se expresa que las Máquinas de Turing (Turing Machine TM) le dan una semántica operacional a los algoritmos, pero esa semántica no es buena, pues para realizar cada paso se requieren una larga secuencia de pasos, y que aunque existen otros modelos formales como las Máquinas de Kolmogorov-Uspensky o Máquinas de modificación de almacenamiento de Schonhage, cada una de estas máquinas tienen un nivel de abstracción arreglado que será apropiado para algunos algoritmos, pero para otros no será suficientemente alto.
+
+Considerando estas limitaciones de las máquinas con un nivel de abstracción definida, se comienzan a construir implementaciones de álgebras evolutivas de lenguajes de programación populares de la época como la de Prolog \cite{Rosenzweig1995TheCorrectness} y la de C \cite{Gurevich1993TheLanguage}, lo que conlleva a una estructuración formal de estas álgebras evolutivas.
+
+La principal característica que ofrecen las ASM es la facilidad de dar una semántica operacional adaptable al dominio del problema que representa, lo cual se traduce en una facilidad para la lectura del modelo y lo que supone una implementación en un computador mas sencillo, existiendo evaluadores de ASM desde comienzos de los 90 \cite{Gurevich1991EVOLVINGSEMANTICS}.
+
+Esta facilidad en la construcción de ASM genera la impresión de que en lugar de tener un modelo matemático adaptado a la computación, como es el caso de las TM, tenemos un modelo computacional adaptado a las matemáticas.
+
+\section{Definición Formal}
+
+De una manera muy sencilla, un ASM está compuesto por una tupla de la forma
+\begin{align}
+
+\langle \Sigma, Q, \delta, q_0\rangle \cite{Stark2001AbstractMachines}
+
+\end{align}
+
+Donde:
+
+$ \Sigma $ es el alfabeto de términos, los cuales pueden ser constantes, variables o funciones.
+
+$ Q $ es un conjunto de estados
+
+$ q_0 $ un estado inicial
+
+A diferencia de las álgebras matemáticas que son estáticas, en computación los estados son dinámicos, ellos evolucionan durante las etapas de computación. Actualizar un estado abstracto implica cambiar la interpretación de alguna de las funciones del alfabeto $ \Sigma $.
+
+Las reglas de transición que pueden estar definidas son las siguientes:
+
+\begin{itemize}
+    \item Pasar: No hacer nada
+    \item Actualizar: $ f(t_1,...,t_n):=s $ En el siguiente paso de ejecución, la función f evaluada con los elementos $ t_i \in \Sigma$ valdrá $s$. Esto aplica para funciones sin aridad, es decir, constantes.
+    \item Bloqueo: $ R S $ Las funciones  $S R \in \Sigma $pueden realizarse en paralelo
+    \item Condicionales: $if \ \phi \ then \  R \ else \ S $ Si $\phi$ es correcto ejecute R, de lo contrario S
+    \item Asignaciones: $ let \ x = t \ in \ R $ Asigne t a x y ejecute R
+    \item Para todo: $ forall \ x \ with \phi do \ R$ Ejecute R en paralelo para todos los x que satisfagan $ \phi $
+    \item Llamado: $ r(t_1,...,t_n) $ Ejecute r con los parámetros $ t_1,...,t_n $
+    \item Definición: $r(t_1,...,t_n) = R$ Defina la regla R llamando a r con los parámetros $ t_1,...,t_n$
+\end{itemize}
+
+\section{Relación con Máquinas Abstractas basadas en el modelo Chomsky}
+Las jerarquías de lenguaje presentada por Noam Chomsky en 1956 \cite{ChomskyTHREELANGUAGE} ha sido un punto de inicio para la computación teórica moderna, considerando que la jerarquía de mayor nivel, donde no existen restricciones es equivalente a una Máquina de Turing. El poder expresivo de una Máquina de Turing representa el poder de cómputo de un computador moderno y en términos de complejidad computacional define lo que puede ser alcanzable y no.
+
+Entendiendo las ASM en su estructura podríamos identificar que comparten características con los Autómatas Finitos Deterministas (Finite State Automaton FSD), pues están compuestos por un alfabeto $ \Sigma $, un conjunto de estados $ Q $ y un estado inicial $q_0$, pareciendo que podrían llegar a tener una expresividad similar por las características, pero la verdad es que son mucho mas expresivos, siendo un poco mas similares a una TM.
+
+Sin embargo, las diferencias conceptuales de estas máquinas abstractas ván mucho mas allá de su composición. Siguiendo el esquema de Chomsky, para las gramáticas de todos los niveles, se toma un alfabeto inicial $ \Sigma $ que por lo general representa los elementos que se leen de la cadena en el proceso; en las ASM el alfabeto $ \Sigma $ está compuesto por funciones que definen su propio universo \cite{Gurevich1993TheLanguage}. Cada universo define su dominio y sobre este dominio las funciones que pueden ejecutarse sobre él. Esta nueva aproximación permite que ahora exista mucha mas expresividad en el modelo, pues el alfabeto definido para las TM es un caso especial de funciones con aridad 0, las que son definidas por los ASM como constantes.
+
+Otra diferencia clara con respecto a las TM es que mientras que las TM contienen un conjunto de estados finito inmutable, los ASM pueden cambiar su estado en tiempo de ejecución y más aún crear nuevos estados de ejecución, cosa que no es posible con el modelo de las TM.
+
+Con respecto a los estado de aceptación, no aceptación y bucles bien conocidos en las TM, los ASM presentan un mecanismo distinto para determinar el proceso fallido; para esto se hace necesario explicar el proceso de la actualización consistente. Como la actualización del estado se realiza directamente sobre el vocabulario de $\Sigma$, existen actualizaciones que pueden ser válidas o no. Para que una actualización sea válida dado un univeso $U \in \Sigma$ y una función $f \in U $ si $f(t_1,...,t_n)=b$, $b \in U$. Si $b \not\in U$ o $b=undef$ decimos que la actualización es inconsistente y el proceso se termina \cite{Stark2001AbstractMachines}.
+\section{Aplicaciones en Procesamiento de Lenguaje Natural}
+Para el procesamiento de lenguaje natural, existen varias estructuras comunes para atacar los problemas, como listas, grafos y árboles, que junto con sus algoritmos dan resultados por la teoría formal de lenguaje. Utilizando Álgebras Evolutivas o ASM se posible crear estructuras con varios niveles de abstracción que permitan probar propiedades de los programas. Considerando que uno de los propósitos generales de las ASM es probar intuiciones desde un modelo abstracto de alto nivel, esta aproximación resulta interesante para incorporar mecanismos abstractos en metodologías mas tradicionales.
+
+Las técnicas utilizadas para explorar el lenguaje esta llena de operaciones del tipo abstracción, extraposición, adjunción, y todo tipo de movimientos y reconfiguraciones de árboles. La idea detrás de estos algoritmos es tratar contenido dinámico, sin embargo la matemática detrás de esto usualmente es estática, lo que implica que aunque la estructura cambie, se va a analizar como un estado de no cambio. 
+
+Las gramáticas independientes de contexto son la herramienta matemática mas usada para el estudio de la sintaxis. Las derivaciones de estas gramáticas nos permiten crear un árbol creciente (en función de las reglas). Las herramientas matemáticas para analizar y extraer información de estos árboles no permite entender bien las formalizaciones directas de las ideas dinámicas. Aunque es posible entender la variación estática sobre los árboles y esto no puede ofrecer una imagen dinámica de las ideas detrás de los árboles sintácticos, una aproximación dinámica puede resultar mas natural a la hora de entender mejor el significado del análisis.
+\cite{Moss1995EvolvingLanguage}
+\section{Conclusiones}
+Al igual que las máquinas abstractas relacionadas con las jerarquías de Chomsky, las ASM tienen una relevancia importante en muchos campos de la computación. Existen aplicaciones, en múltiples campos como las arquitecturas, los algoritmos abstractos, los compiladores, las bases de datos, los sistemas distribuidos, la verificación mecánica, el procesamiento de lenguaje natural el monitoreo en tiempo real, la seguridad, la programación lógica y el hardware. La idea de tener una máquina que se enfoca mas en lo procedural que en lo declarativo, con un modelo matemático que permite probar correctitud y simular sin tener que detenerse a la implementación a detalle de cada componente que representa a un estado es de gran valor para los diseñadores de los sistemas.
+
+Así como las TM han estado por mas de 60 años aportando información relevante para la computación, las ASM también pueden perdurar en el tiempo, desde la parte formativa hasta la operativa, mostrando las ventajas y la flexibilidad que se puede tener por medio de modelos matemáticos robustos.
+\bibliographystyle{plain} 
+\bibliography{mendeley_v2.bib}
+\end{document}
